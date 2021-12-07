@@ -65,8 +65,6 @@ int main( int argc, char* argv[] )
 
     while( true )
     {
-        memset( buf, '\0', buflen );
-
         // -1 无限阻塞 
         ret = poll( fds, 1, -1 );
 
@@ -78,6 +76,7 @@ int main( int argc, char* argv[] )
 
         if( fds[0].revents & POLLRDNORM )
         {
+            memset( buf, '\0', buflen );
             ret = recv( connfd, buf, buflen-1, 0 );
             if( ret <= 0 )
             {
@@ -85,8 +84,10 @@ int main( int argc, char* argv[] )
             }
             printf( "get %d bytes of normal data: %s\n", ret, buf );
         }
-        else if( fds[0].revents & POLLPRI )
+        
+        if( fds[0].revents & POLLPRI )
         {
+            memset( buf, '\0', buflen );
             ret = recv( connfd, buf, buflen-1, MSG_OOB );
             if( ret <= 0 )
             {

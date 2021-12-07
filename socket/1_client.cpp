@@ -64,9 +64,21 @@ int main( int argc, char* argv[] )
         printf("\n");
 
         int len = strlen( buffer );
-        if(len>3 && buffer[0]=='O' && buffer[1]=='O' && buffer[2]=='B' )
+        if(len>=1 && buffer[0]=='O' )
         {
             send( sock, buffer, len, MSG_OOB );
+        }else if(len>=1 && buffer[0]=='D' )
+        {
+            // 第二个紧急数据会覆盖第一个(一个TCP包只有一个紧急指针)
+            send( sock, buffer, len, MSG_OOB );
+            sprintf(buffer,"OOB");
+            send( sock, buffer, 3, MSG_OOB );
+        }
+        else if(len>=1 && buffer[0]=='B' )
+        {
+            send( sock, buffer, len, MSG_OOB );
+            sprintf(buffer,"OOB");
+            send( sock, buffer, 3, 0 );
         }
         else
         {

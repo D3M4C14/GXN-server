@@ -70,8 +70,6 @@ int main( int argc, char* argv[] )
 
     while( true )
     {
-        memset( buf, '\0', buflen );
-
         // 每次都要重设一次
         FD_SET( connfd, &rfds );
         FD_SET( connfd, &wfds );
@@ -100,6 +98,7 @@ int main( int argc, char* argv[] )
     
         if ( FD_ISSET( connfd, &rfds ) )
         {
+            memset( buf, '\0', buflen );
             ret = recv( connfd, buf, buflen-1, 0 );
             if( ret <= 0 )
             {
@@ -107,8 +106,10 @@ int main( int argc, char* argv[] )
             }
             printf( "get %d bytes of normal data: %s\n", ret, buf );
         }
-        else if( FD_ISSET( connfd, &efds ) )
+        
+        if( FD_ISSET( connfd, &efds ) )
         {
+            memset( buf, '\0', buflen );
             ret = recv( connfd, buf, buflen-1, MSG_OOB );
             if( ret <= 0 )
             {
@@ -116,7 +117,8 @@ int main( int argc, char* argv[] )
             }
             printf( "get %d bytes of oob data: %s\n", ret, buf );
         }
-        else if( FD_ISSET( connfd, &wfds ) )
+        
+        if( FD_ISSET( connfd, &wfds ) )
         {
             printf( "can write data \n" );
             sleep(1);

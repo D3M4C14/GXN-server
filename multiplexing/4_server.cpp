@@ -167,52 +167,45 @@ int main( int argc, char* argv[] )
             {// 客户端数据
                 const int buflen = 1024;
                 char buf[buflen];
-                memset( buf, '\0', buflen );
+
+                if( (events[i].events & EPOLLPRI) )
+                {
+                    memset( buf, '\0', buflen );
+                    ret = recv( fd, buf, buflen-1, MSG_OOB );
+                    if( ret <= 0 )
+                    {
+                        if( ( errno != EAGAIN ) && ( errno != EWOULDBLOCK ) )
+                        {
+                            perror("recv oob");
+                        }
+                    }
+                    else
+                    {
+                        printf( "get %d bytes of oob data: %s\n", ret, buf );
+                    }
+                }
 
                 if( events[i].events & EPOLLRDNORM )
                 {
                     while( true )
-                    {// 普通数据
+                    {
+                        memset( buf, '\0', buflen );
                         ret = recv( fd, buf, buflen-1, 0 );
                         if( ret <= 0 )
                         {
                             if( ( errno == EAGAIN ) || ( errno == EWOULDBLOCK ) )
                             {
                                 break;
-                                break;
                             }
                             else
                             {
                                 perror("recv");
+                                break;
                             }
                         }
                         else
                         {
                             printf( "get %d bytes of normal data: %s\n", ret, buf );
-                        }
-                    }
-                }
-
-                if( events[i].events & EPOLLPRI )
-                {
-                    while( true )
-                    {// 带外数据
-                        ret = recv( fd, buf, buflen-1, MSG_OOB );
-                        if( ret <= 0 )
-                        {
-                            if( ( errno == EAGAIN ) || ( errno == EWOULDBLOCK ) )
-                            {
-                                break;
-                            }
-                            else
-                            {
-                                perror("recv oob");
-                                break;
-                            }
-                        }
-                        else
-                        {
-                            printf( "get %d bytes of oob data: %s\n", ret, buf );
                         }
                     }
                 }

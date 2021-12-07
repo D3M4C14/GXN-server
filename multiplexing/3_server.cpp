@@ -54,7 +54,7 @@ int main( int argc, char* argv[] )
                 , inet_ntop( AF_INET, &caddr.sin_addr, raddr, INET_ADDRSTRLEN )
                 , ntohs( caddr.sin_port ) );
 
-    const int buflen = 1024;
+    const int buflen = 3;
     char buf[buflen];
 
     // 设置连接fd为非阻塞
@@ -91,10 +91,30 @@ int main( int argc, char* argv[] )
             int fd = events[i].data.fd;
             if( fd == connfd )
             {
+                // 如果有带外数据，只可能有1个数据(带外数据只会有1个字节的数据)
+                // 带外数据可以先取，但是不可以用普通方式操作了带外数据再去取(会被清除)
+                if( (events[i].events & EPOLLPRI) )
+                {
+                    memset( buf, '\0', buflen );
+                    ret = recv( fd, buf, buflen-1, MSG_OOB );
+                    if( ret <= 0 )
+                    {
+                        if( ( errno != EAGAIN ) && ( errno != EWOULDBLOCK ) )
+                        {
+                            perror("recv oob");
+                        }
+                    }
+                    else
+                    {
+                        printf( "get %d bytes of oob data: %s\n", ret, buf );
+                    }
+                }
+
                 if( events[i].events & EPOLLRDNORM )
                 {
                     while( true )
                     {
+                        memset( buf, '\0', buflen );
                         ret = recv( fd, buf, buflen-1, 0 );
                         if( ret <= 0 )
                         {
@@ -105,6 +125,7 @@ int main( int argc, char* argv[] )
                             else
                             {
                                 perror("recv");
+                                break;
                             }
                         }
                         else
@@ -113,32 +134,7 @@ int main( int argc, char* argv[] )
                         }
                     }
                 }
-                else if( events[i].events & EPOLLPRI )
-                {
-                    while( true )
-                    {
-                        ret = recv( fd, buf, buflen-1, MSG_OOB );
-                        if( ret <= 0 )
-                        {
-                            if( ( errno == EAGAIN ) || ( errno == EWOULDBLOCK ) )
-                            {
-                                break;
-                            }
-                            else
-                            {
-                                perror("recv oob");
-                            }
-                        }
-                        else
-                        {
-                            printf( "get %d bytes of oob data: %s\n", ret, buf );
-                        }
-                    }
-                }
-                else
-                {
-                    printf( "other event: %d\n",events[i].events );
-                }
+
             }
         }
     }
