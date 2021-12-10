@@ -10,11 +10,6 @@ static const int CONTROL_LEN = CMSG_LEN( sizeof(int) );
 
 void send_fd( int fd, int sfd )
 {
-    char buf[0];
-    struct iovec iov[1];
-    iov[0].iov_base = buf;
-    iov[0].iov_len = 1;
-
     cmsghdr cm;
     cm.cmsg_len = CONTROL_LEN;
     cm.cmsg_level = SOL_SOCKET;
@@ -22,10 +17,10 @@ void send_fd( int fd, int sfd )
     *(int *)CMSG_DATA( &cm ) = sfd;
 
     struct msghdr msg;
-    msg.msg_name    = NULL;
+    msg.msg_name    = nullptr;
     msg.msg_namelen = 0;
-    msg.msg_iov     = iov;
-    msg.msg_iovlen = 1;
+    msg.msg_iov     = nullptr;
+    msg.msg_iovlen = 0;
     msg.msg_control = &cm;
     msg.msg_controllen = CONTROL_LEN;
 
@@ -34,18 +29,13 @@ void send_fd( int fd, int sfd )
 
 int recv_fd( int fd )
 {
-    char buf[0];
-    struct iovec iov[1];
-    iov[0].iov_base = buf;
-    iov[0].iov_len = 1;
-
     cmsghdr cm;
 
     struct msghdr msg;
-    msg.msg_name    = NULL;
+    msg.msg_name    = nullptr;
     msg.msg_namelen = 0;
-    msg.msg_iov     = iov;
-    msg.msg_iovlen  = 1;
+    msg.msg_iov     = nullptr;
+    msg.msg_iovlen  = 0;
     msg.msg_control = &cm;
     msg.msg_controllen = CONTROL_LEN;
 
@@ -57,6 +47,11 @@ int recv_fd( int fd )
 int main( int argc, char* argv[] )
 {
     int pfd[2];
+
+    // 准备文件
+    int tfd = open( "test.txt", O_CREAT | O_RDWR | O_TRUNC, 0666 );
+    write( tfd, "abc123", 6 );
+    close( tfd );
 
     int ret = socketpair( PF_UNIX, SOCK_DGRAM, 0, pfd );
     if( ret == -1 )
@@ -74,16 +69,12 @@ int main( int argc, char* argv[] )
 
     if ( pid == 0 )
     {
-        int fd = open( "test.txt", O_CREAT | O_RDWR | O_TRUNC, 0666 );
+        int fd = open( "test.txt", O_RDWR, 0666 );
         if ( fd < 0 )
         {
             perror( "open test.txt" );
             return 1;
         }
-
-        syn( fd, "abc123", 6 );
-        
-        printf( "process write data\n" );
 
         send_fd( pfd[1], fd );
 
@@ -93,8 +84,6 @@ int main( int argc, char* argv[] )
     }
     else
     {
-        printf( "pppp\n" );
-        sleep(1);
         int fd = recv_fd( pfd[0] );
 
         const int bsz = 64;
