@@ -53,7 +53,7 @@ int main( int argc, char* argv[] )
                 , inet_ntop( AF_INET, &caddr.sin_addr, raddr, INET_ADDRSTRLEN )
                 , ntohs( caddr.sin_port ) );
 
-    const int buflen = 1024;
+    const int buflen = 4;
     char buf[buflen];
 
     fd_set rfds;//读
@@ -67,6 +67,11 @@ int main( int argc, char* argv[] )
     // 若开启 则会放到普通数据中
     // int on = 1;
     // setsockopt( connfd, SOL_SOCKET, SO_OOBINLINE, &on, sizeof( on ) );
+
+    // 设置为非阻塞
+    int old_option = fcntl( connfd, F_GETFL );
+    int new_option = old_option | O_NONBLOCK;
+    fcntl( connfd, F_SETFL, new_option );
 
     while( true )
     {
@@ -96,28 +101,37 @@ int main( int argc, char* argv[] )
 
         printf( "select event time:%ld:%ld\n", tv.tv_sec, tv.tv_usec );
     
-        if ( FD_ISSET( connfd, &rfds ) )
-        {
-            memset( buf, '\0', buflen );
-            ret = recv( connfd, buf, buflen-1, 0 );
-            if( ret <= 0 )
-            {
-                break;
-            }
-            printf( "get %d bytes of normal data: %s\n", ret, buf );
-        }
-        
+        // 优先检查带外数据 (如果只有一个带外数据开头,可能会被普通数据的读取而导致丢失)
         if( FD_ISSET( connfd, &efds ) )
         {
             memset( buf, '\0', buflen );
             ret = recv( connfd, buf, buflen-1, MSG_OOB );
-            if( ret <= 0 )
+            if( ret < 0 )
             {
+                perror( "recv oob" );
                 break;
             }
-            printf( "get %d bytes of oob data: %s\n", ret, buf );
+            else if( ret > 0 )
+            {
+                printf( "get %d bytes of oob data: %s\n", ret, buf );
+            }
         }
-        
+
+        if ( FD_ISSET( connfd, &rfds ) )
+        {
+            memset( buf, '\0', buflen );
+            ret = recv( connfd, buf, buflen-1, 0 );
+            if( ret < 0 )
+            {
+                perror( "recv1" );
+                break;
+            }
+            else if( ret > 0 )
+            {
+                printf( "get %d bytes of normal data: %s\n", ret, buf );
+            }
+        }
+
         if( FD_ISSET( connfd, &wfds ) )
         {
             printf( "can write data \n" );

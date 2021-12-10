@@ -71,14 +71,14 @@ int main( int argc, char* argv[] )
         {
             // 第二个紧急数据会覆盖第一个(一个TCP包只有一个紧急指针)
             send( sock, buffer, len, MSG_OOB );
-            sprintf(buffer,"OOB");
-            send( sock, buffer, 3, MSG_OOB );
+            char obd[] = "OOB";
+            send( sock, obd, 3, MSG_OOB );
         }
         else if(len>=1 && buffer[0]=='B' )
         {
             send( sock, buffer, len, MSG_OOB );
-            sprintf(buffer,"OOB");
-            send( sock, buffer, 3, 0 );
+            char obd[] = "OOB";
+            send( sock, obd, 3, 0 );
         }
         else
         {

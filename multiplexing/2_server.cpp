@@ -54,7 +54,7 @@ int main( int argc, char* argv[] )
                 , inet_ntop( AF_INET, &caddr.sin_addr, raddr, INET_ADDRSTRLEN )
                 , ntohs( caddr.sin_port ) );
 
-    const int buflen = 1024;
+    const int buflen = 4;
     char buf[buflen];
 
     pollfd fds[1];
@@ -73,27 +73,35 @@ int main( int argc, char* argv[] )
             perror("poll");
             break;
         }
-
-        if( fds[0].revents & POLLRDNORM )
-        {
-            memset( buf, '\0', buflen );
-            ret = recv( connfd, buf, buflen-1, 0 );
-            if( ret <= 0 )
-            {
-                break;
-            }
-            printf( "get %d bytes of normal data: %s\n", ret, buf );
-        }
         
         if( fds[0].revents & POLLPRI )
         {
             memset( buf, '\0', buflen );
             ret = recv( connfd, buf, buflen-1, MSG_OOB );
-            if( ret <= 0 )
+            if( ret < 0 )
             {
+                perror( "recv oob" );
                 break;
             }
-            printf( "get %d bytes of oob data: %s\n", ret, buf );
+            else if( ret > 0 )
+            {
+                printf( "get %d bytes of oob data: %s\n", ret, buf );
+            }
+        }
+
+        if( fds[0].revents & POLLRDNORM )
+        {
+            memset( buf, '\0', buflen );
+            ret = recv( connfd, buf, buflen-1, 0 );
+            if( ret < 0 )
+            {
+                perror( "recv" );
+                break;
+            }
+            else if( ret > 0 )
+            {
+                printf( "get %d bytes of normal data: %s\n", ret, buf );    
+            }
         }
 
     }
