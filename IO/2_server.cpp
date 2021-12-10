@@ -68,7 +68,7 @@ int main( int argc, char* argv[] )
                                         , MAP_SHARED, mmap_file_fd, 0);
     if(mmap_file_ptr == MAP_FAILED){
         printf( "mmap : %s mmap error!\n", mmap_file_name );
-        perror("mmap");
+        perror( "mmap" );
         return 1;
     }
 
