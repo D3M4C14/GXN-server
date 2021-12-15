@@ -1,8 +1,8 @@
 * 进程
 
-* 编译运行命令
-  `g++ -g -Wall -std=c++11 -o server 1_server.cpp -lpthread -lrt`
-  `./server`
+* 编译运行命令  
+  `g++ -g -Wall -std=c++11 -o server 1_server.cpp -lpthread -lrt`  
+  `./server`  
   其实只有第4例需要 -lrt 由于使用了POSIX共享内存对象
 
 * **1.** 多进程用法  
