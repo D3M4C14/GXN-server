@@ -1,8 +1,9 @@
-* set.md 列举了一些通用的内核变量的设置
+* 套接字
 
-* 编译运行命令
-  `g++ -g -Wall -std=c++11 -o server 1_server.cpp`
-  `./server`
+* 编译运行命令  
+  `g++ -g -Wall -std=c++11 -o server 1_server.cpp`  
+  `./server`  
+  set.md 列举了一些通用的内核变量的设置
 
 * **注意**
   千万别再windows10的Linux子系统上进行，有很多接口和特性都无法使用  
