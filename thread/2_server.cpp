@@ -12,18 +12,16 @@ const int thread_num = 4;
 
 pthread_t threads[ thread_num ];
 
-
-
 void lose( void * arg )
 {
-    printf("thread(%lx) canceled(%d)\n", pthread_self(), *(int *)arg );
+    printf( "thread(%lx) canceled(%d)\n", pthread_self(), *(int *)arg );
 }
 
 
 void* work( void * arg )
 {
     int ans = *(int *)arg;
-    printf("thread(%lx) find:%d\n", pthread_self(), ans );
+    printf( "thread(%lx) find:%d\n", pthread_self(), ans );
 
     int idx = 0;
 
@@ -31,10 +29,10 @@ void* work( void * arg )
     pthread_cleanup_push( lose, (void*)&idx );
 
     // 设置取消类型和状态
-    pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, nullptr);
-    pthread_setcanceltype(PTHREAD_CANCEL_DEFERRED, nullptr);
+    pthread_setcancelstate( PTHREAD_CANCEL_ENABLE, nullptr );
+    pthread_setcanceltype( PTHREAD_CANCEL_DEFERRED, nullptr );
 
-    int s = rand() & 0xFFFFFF;
+    int s = rand() & 0xFFFFF;
 
     while( true )
     {
@@ -63,11 +61,11 @@ void* work( void * arg )
         if( threads[ i ] != sid ) pthread_cancel( threads[ i ] );
     }
 
-    printf("thread(%ld) found ans idx : %d \n", sid, idx );
+    printf( "thread(%ld) found ans idx : %d \n", sid, idx );
 
     // 取消所有取消函数回调 清空栈
     // pthread_join的返回值也将被清理 导致返回的结果是0
-    pthread_cleanup_pop(0);
+    pthread_cleanup_pop( 0 );
 
     pthread_exit( (void*)&idx );
 
@@ -81,14 +79,14 @@ int main( int argc, char* argv[] )
     
     srand( (unsigned)time(nullptr) );
 
-    int ans = rand() & 0xFFFFFF;
+    int ans = rand() & 0xFFFFF;
 
     for (int i = 0; i < thread_num; ++i)
     {
-        ret = pthread_create( &threads[ i ], nullptr, work, (void*)&ans );
+        ret = pthread_create( &threads[i], nullptr, work, (void*)&ans );
         if( ret != 0 )
         {
-            perror("pthread_create");
+            perror( "pthread_create" );
             return 1;
         }
     }
@@ -97,7 +95,7 @@ int main( int argc, char* argv[] )
     {
         int * retval;
 
-        pthread_join( threads[ i ], (void**)&retval );
+        pthread_join( threads[i], (void**)&retval );
 
         // if( retval != (void*)-1 )printf("thread(%lx) found ans idx : %d \n", threads[ i ] , *retval );
 

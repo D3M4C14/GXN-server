@@ -10,7 +10,7 @@
 
 void* thread_func( void * arg )
 {
-    printf("I am thread got arg : %d\n", *(int*)arg );
+    printf( "I am thread got arg : %d\n", *(int*)arg );
     while( true )
     {
         sched_yield();
@@ -47,7 +47,7 @@ int main( int argc, char* argv[] )
     int ret = pthread_create( &tid, &attr, thread_func, (void*)&arg );
     if( ret != 0 )
     {
-        perror("pthread_create");
+        perror( "pthread_create" );
         return 1;
     }
 
