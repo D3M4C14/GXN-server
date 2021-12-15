@@ -46,9 +46,22 @@ void sigcbk( int sig )
     errno = lerrno;
 }
 
+void exit_func1() 
+{ 
+    printf("process exit 1\n"); 
+}
+
+void exit_func2() 
+{ 
+    printf("process exit 2\n"); 
+}
+
 int main( int argc, char* argv[] )
 {
     printf( " * run main process : %d \n", getpid() );
+
+    atexit(exit_func1);
+    atexit(exit_func2);
 
     pid_t pid;
     
