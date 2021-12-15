@@ -1,7 +1,7 @@
 * 信号
 
-* 编译运行命令
-  `g++ -g -Wall -std=c++11 -o server 1_server.cpp -lpthread`
+* 编译运行命令  
+  `g++ -g -Wall -std=c++11 -o server 1_server.cpp -lpthread`  
   `./server`
 
 * **1.** 信号 用法
