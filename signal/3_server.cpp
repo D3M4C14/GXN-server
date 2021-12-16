@@ -5,21 +5,58 @@
 #include <signal.h>
 #include <errno.h>
 
-
-static void * sig_thread(void *arg)
+static void * sig_thread( void *arg )
 {
     sigset_t *set = (sigset_t *) arg;
-    int ret,sig;
+    int ret,sig,r;
 
+    // 等待并处理信号，不必再需要其他的信号处理函数
     while( true )
     {
-        // 等待并处理信号，不必再需要其他的信号处理函数
-        ret = sigwait(set, &sig);
-        if( ret != 0 )
+
+        r = rand() % 10;
+
+        if( r > 3 )
         {
-            perror( "sigwait" );
+            timespec t = {0,1000};
+            siginfo_t sinf;
+            sig = sigtimedwait( set, &sinf, &t);
+            if( sig < 0 )
+            {
+                if( errno != EAGAIN )
+                {
+                    perror( "sigtimedwait" );
+                }
+                continue;
+            }
+            printf( "thread [sigtimedwait] got signal(%d) val(%d)\n", sig, sinf.si_int );
+
+            printf( "psiginfo info:\n" );
+            psiginfo( &sinf, nullptr );
         }
-        printf( "sig thread got signal : %d\n", sig );
+        else if( r & 1 )
+        {
+            ret = sigwait( set, &sig );
+            if( ret != 0 )
+            {
+                perror( "sigwait" );
+            }
+            printf( "thread [sigwait] got signal(%d)\n", sig );
+        }
+        else
+        {
+            siginfo_t sinf;
+            sig = sigwaitinfo( set, &sinf );
+            if( sig < 0 )
+            {
+                perror( "sigwaitinfo" );
+            }
+            printf( "thread [sigwaitinfo] got signal(%d) val(%d) code(%d)\n", sig, sinf.si_int, sinf.si_code );
+
+            printf( "psiginfo info:\n" );
+            psiginfo( &sinf, nullptr );
+        }
+
     }
 
 }
@@ -29,7 +66,7 @@ static void sigcbk( int arg )
     printf( "thread : %ld got sig : %d \n", pthread_self(), arg );
 }
 
-int main(int argc, char *argv[])
+int main( int argc, char *argv[] )
 {
     pthread_t thread;
     sigset_t set;
@@ -39,7 +76,7 @@ int main(int argc, char *argv[])
     // 因此这个信号处理函数将会无效
     signal( SIGQUIT, sigcbk );
 
-    sigemptyset( &set);
+    sigemptyset( &set );
     sigaddset( &set, SIGQUIT );
     sigaddset( &set, SIGUSR1 );
 
@@ -60,11 +97,23 @@ int main(int argc, char *argv[])
     }
     printf( "sub thread with id: %ld\n", thread );
 
+    int r;
     while(true)
     {
         sleep(1);
-        kill( getpid(), SIGQUIT );
-        kill( getpid(), SIGUSR1 );
+
+        r = rand() % 10;
+        
+        if( r & 1 )
+        {
+            kill( getpid(), SIGQUIT );
+            kill( getpid(), SIGUSR1 );
+        }
+        else
+        {
+            sigqueue( getpid(), SIGQUIT, (sigval){123} );
+            sigqueue( getpid(), SIGUSR1, (sigval){456} );
+        }
     }
 
     return 0;
