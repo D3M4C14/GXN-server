@@ -1,66 +1,132 @@
-#include <sys/msg.h>
+#include <sys/shm.h>
+#include <sys/sem.h>
+#include <sys/mman.h>
 #include <stdio.h>
+#include <errno.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 #include <sys/wait.h>
+#include <fcntl.h>
+#include <time.h>
 
-// 消息队列的数据固定格式
-// 数据长度可以自定义 发送和接收函数需要指定
-template<int N>
-struct msgdata
+static const int sem_key = 0x3af7e1c5;
+static const char* shm_fn = "/tf_shm";
+const int bufsz = 1024;
+
+static bool stop = false;
+
+union semun
 {
-    long mtype;
-    char mtext[N];
+    int val;                  
+    struct semid_ds* buf;     
+    unsigned short int* array;
+    struct seminfo* __buf;    
 };
+
+void timercbk( int sig )
+{
+    stop = true;
+}
+
+int pv( int sem_id, int op )
+{
+    struct sembuf sem_b;
+    sem_b.sem_num = 0;
+    sem_b.sem_op = op;
+    sem_b.sem_flg = SEM_UNDO;
+    return semop( sem_id, &sem_b, 1 );
+}
 
 int main( int argc, char* argv[] )
 {
 
-    int msg_id = msgget( IPC_PRIVATE, 0666 );
-    if( msg_id == -1 )
+    signal( SIGALRM, timercbk );
+    alarm( 10 );
+
+    // 唯一排他创建信号
+    int sem_id = semget( sem_key, 1, 0666 | IPC_CREAT | IPC_EXCL );
+    if( sem_id > 0 )
+    {// 若创建成功进行 初始化
+        union semun su;
+        su.val = 1;
+        semctl( sem_id, 0, SETVAL, su );
+    }
+    else 
+    {// 若已经创建则直接获取使用
+        if( errno == EEXIST )
+        {
+            sem_id = semget( sem_key, 1, 0666 );
+            if( sem_id < 1 )
+            {
+                perror( "semget2" );
+                return 1;
+            }
+        }
+        else
+        {
+            perror( "semget1" );
+            return 1;
+        }
+    }
+
+    int shmfd = shm_open( shm_fn, O_CREAT | O_RDWR, 0666 );
+    if( shmfd == -1 )
     {
-        perror( "msgget" );
+        perror( "shm_open" );
         return 1;
     }
 
-    pid_t pid = fork();
-    if( pid < 0 )
+    int ret = ftruncate( shmfd, bufsz );
+    if( ret == -1 )
     {
-        perror( "fork" );
+        perror( "ftruncate" );
         return 1;
     }
-    else if( pid == 0 )
+
+    char *share_mem = (char*)mmap( nullptr, bufsz, PROT_READ | PROT_WRITE, MAP_SHARED, shmfd, 0 );
+    if( share_mem == MAP_FAILED )
     {
-        const int msz = 32;
-        struct msgdata<msz> msg;
-        msg.mtype = 1;
-        sprintf(msg.mtext,"msgdata");
-        int ret = msgsnd( msg_id, (void*)&msg, msz, IPC_NOWAIT);
-        if( ret == -1 )
-        {
-            perror( "msgsnd" );
-            return 1;
-        }
-        printf( "process(%d) send msg : '%s' \n", getpid(), msg.mtext );
-        exit( 0 );
+        perror( "mmap" );
+        return 1;
     }
-    else
+    close( shmfd );
+
+    srand( (unsigned)time( nullptr ) );
+
+    int pid = getpid();
+
+    while( !stop )
     {
-        sleep( 1 );
-        const int msz = 64;
-        struct msgdata<msz> msg;
-        int ret = msgrcv( msg_id, (void*)&msg, msz, 1, IPC_NOWAIT);
+        int r = rand() % ( 10 );
+        usleep( 100000 * r );
+
+        ret = pv( sem_id, -1 );
         if( ret == -1 )
-        {
-            perror( "msgrcv" );
-            return 1;
+        {// 可能其他进程把信号移除了
+            break;
+        }
+        memset( share_mem, '\0', bufsz );
+        sprintf( share_mem, "data%d%d%d", r,r,r );
+        printf( "process(%d) write data : '%s'\n", pid, share_mem );
+        usleep( 400000 );
+        ret = pv( sem_id, 1 );
+        if( ret == -1 )
+        {// 可能其他进程把信号移除了
+            break;
         }
 
-        printf( "process(%d) got msg : '%s'\n", getpid(), msg.mtext );
+        r = rand() % ( 10 );
+        usleep( 200000 * r );
 
+        printf( "process(%d) read data : '%s'\n", getpid(), share_mem );
     }
 
-    waitpid( pid, nullptr, 0 );
-    msgctl( msg_id, IPC_RMID, nullptr );
+    munmap( (void*)share_mem, bufsz );
+
+    shm_unlink( shm_fn );
+
+    semctl( sem_id, 0, IPC_RMID );
+
     return 0;
 }
