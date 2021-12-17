@@ -65,13 +65,14 @@ int main( int argc, char* argv[] )
 
     const int bsz = 4096;
     char buffer[ bsz ];
-    while(1){
+    while( true )
+    {
 
-        printf("-input msg...\n");
+        printf( "-input msg...\n" );
         std::cin >> buffer;
-        printf("\n");
+        printf( "\n" );
 
-        int blen = strlen(buffer);
+        int blen = strlen( buffer );
 
         if( blen > 2 && buffer[0] == '@' && buffer[1] > '0' && buffer[1] <= '5' )
         {// 通用型 
@@ -91,14 +92,15 @@ int main( int argc, char* argv[] )
             msg.msg_control = nullptr;
             msg.msg_controllen = 0;
 
-            int ret = sendmsg(sock,&msg,MSG_DONTWAIT);
-            if(ret<0){
-                perror("sendmsg");
+            int ret = sendmsg( sock, &msg, MSG_DONTWAIT );
+            if(ret<0)
+            {
+                perror( "sendmsg" );
             }
 
             for (int i = 0; i < 3; ++i)
             {
-                usleep(100000);
+                usleep( 100000 );
 
                 // 分散读
                 struct iovec iovo[1];
@@ -116,11 +118,12 @@ int main( int argc, char* argv[] )
                 ret = recvmsg( sock, &msg, MSG_DONTWAIT );
                 if( ret == EAGAIN )
                 {// 暂无消息
-                    usleep(200000);
+                    usleep( 200000 );
                     continue;
                 }
-                else if( ret > 0 ){
-                    printf("recvmsg msg : '%s' \n", buffer );
+                else if( ret > 0 )
+                {
+                    printf( "recvmsg msg : '%s' \n", buffer );
                     break;
                 }
             }
@@ -129,19 +132,20 @@ int main( int argc, char* argv[] )
         {
 
             // 非阻塞 发送
-            sendto(sock, buffer, blen, MSG_DONTWAIT, (struct sockaddr*)&address, alen);
+            sendto( sock, buffer, blen, MSG_DONTWAIT, (struct sockaddr*)&address, alen );
 
             for (int i = 0; i < 3; ++i)
             {
                 usleep(100000);
-                int ret = recvfrom(sock, buffer, bsz-1, MSG_DONTWAIT, (struct sockaddr*)&address, &alen);
+                int ret = recvfrom( sock, buffer, bsz-1, MSG_DONTWAIT, (struct sockaddr*)&address, &alen );
                 if( ret == EAGAIN )
                 {// 暂无消息
-                    usleep(200000);
+                    usleep( 200000 );
                     continue;
                 }
-                else if( ret > 0 ){
-                    printf("recvfrom msg : '%s' \n", buffer );
+                else if( ret > 0 )
+                {
+                    printf( "recvfrom msg : '%s' \n", buffer );
                     break;
                 }
             }

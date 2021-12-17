@@ -97,7 +97,7 @@ int main( int argc, char* argv[] )
 
         pthread_join( threads[i], (void**)&retval );
 
-        // if( retval != (void*)-1 )printf("thread(%lx) found ans idx : %d \n", threads[ i ] , *retval );
+        // if( retval != (void*)-1 )printf( "thread(%lx) found ans idx : %d \n", threads[ i ] , *retval );
 
     }
 

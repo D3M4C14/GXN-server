@@ -74,32 +74,37 @@ int main( int argc, char* argv[] )
             usleep(100000);
 
             ret = splice( connfd, nullptr, sfd[1], nullptr, sz, SPLICE_F_MORE | SPLICE_F_MOVE );
-            if(ret == -1){
-                perror("splice1");
+            if(ret == -1)
+            {
+                perror( "splice1" );
             }
             
             write( connfd, "recvmsg\n", 8 );
 
             // 不可以直接转
             // ret = tee( sfd[0], connfd, sz, SPLICE_F_NONBLOCK );
-            // if(ret == -1){
-            //     perror("tee");
+            // if(ret == -1)
+            // {
+            //     perror( "tee" );
             // }
 
             // 只能管道间转
             ret = tee( sfd[0], ffd[1], sz, SPLICE_F_NONBLOCK );
-            if(ret == -1){
-                perror("tee");
+            if(ret == -1)
+            {
+                perror( "tee" );
             }
 
             ret = splice( sfd[0], nullptr, connfd, nullptr, sz, SPLICE_F_MORE | SPLICE_F_MOVE );
-            if(ret == -1){
-                perror("splice2");
+            if(ret == -1)
+            {
+                perror( "splice2" );
             }
 
             ret = splice( ffd[0], nullptr, filefd, nullptr, sz, SPLICE_F_MORE | SPLICE_F_MOVE );
-            if(ret == -1){
-                perror("splice3");
+            if(ret == -1)
+            {
+                perror( "splice3" );
             }
 
         }

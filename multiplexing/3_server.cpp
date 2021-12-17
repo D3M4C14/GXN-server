@@ -101,7 +101,7 @@ int main( int argc, char* argv[] )
                     {
                         if( ( errno != EAGAIN ) && ( errno != EWOULDBLOCK ) )
                         {
-                            perror("recv oob");
+                            perror( "recv oob" );
                         }
                     }
                     else
@@ -124,7 +124,7 @@ int main( int argc, char* argv[] )
                             }
                             else
                             {
-                                perror("recv");
+                                perror( "recv" );
                                 break;
                             }
                         }

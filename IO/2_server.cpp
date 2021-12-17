@@ -66,7 +66,8 @@ int main( int argc, char* argv[] )
     ftruncate( mmap_file_fd, mmapsz );
     char* mmap_file_ptr = (char*)mmap( nullptr, mmapsz, PROT_READ | PROT_WRITE
                                         , MAP_SHARED, mmap_file_fd, 0);
-    if(mmap_file_ptr == MAP_FAILED){
+    if(mmap_file_ptr == MAP_FAILED)
+    {
         printf( "mmap : %s mmap error!\n", mmap_file_name );
         perror( "mmap" );
         return 1;
@@ -132,16 +133,16 @@ int main( int argc, char* argv[] )
                 else if( blen > 1 && buffer[0] == 'B')
                 {
                     //前面的read使得fd的偏移已经到文件末尾了，必须重置到文件头才行
-                    lseek(file_fd,0,SEEK_SET);
+                    lseek( file_fd, 0, SEEK_SET );
                     sendfile( connfd, file_fd, nullptr, file_stat.st_size );
                 }
-                else if( blen > 1 && buffer[0] == 'C')
+                else if( blen > 1 && buffer[0] == 'C' )
                 {
-                    snprintf(mmap_file_ptr,blen,"recv:%s\n",buffer);
-                    ret = msync(mmap_file_ptr, mmapsz, MS_SYNC);
+                    snprintf( mmap_file_ptr,blen, "recv:%s\n", buffer);
+                    ret = msync( mmap_file_ptr, mmapsz, MS_SYNC );
                     if( ret == -1 )
                     {
-                        perror("msync");
+                        perror( "msync" );
                     }
                 }
                 else if( blen > 1 && buffer[0] == 'Q')

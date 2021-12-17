@@ -48,12 +48,12 @@ void sigcbk( int sig )
 
 void exit_func1() 
 { 
-    printf("process exit 1\n"); 
+    printf( "process exit 1\n" ); 
 }
 
 void exit_func2() 
 { 
-    printf("process exit 2\n"); 
+    printf( "process exit 2\n" ); 
 }
 
 int main( int argc, char* argv[] )
@@ -73,7 +73,7 @@ int main( int argc, char* argv[] )
     int ret = socketpair( PF_UNIX, SOCK_STREAM, 0, pfd );
     if( ret == -1 )
     {
-        perror("socketpair");
+        perror( "socketpair" );
     }
 
     const int bsz = 64;

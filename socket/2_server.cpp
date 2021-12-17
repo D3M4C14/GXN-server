@@ -57,17 +57,18 @@ int main( int argc, char* argv[] )
             usleep(200000);
             continue;
         }
-        else if( ret > 0 ){
+        else if( ret > 0 )
+        {
 
             // 客户端链接信息
             char remote[INET_ADDRSTRLEN];
             printf( "client info : %s:%d\n", 
                         inet_ntop( AF_INET, &client.sin_addr, remote, INET_ADDRSTRLEN ), ntohs( client.sin_port ) );
 
-            printf("receive msg : '%s' \n", buffer );
+            printf( "receive msg : '%s' \n", buffer );
 
-            sprintf(buffer,"got msg size:%d",ret);
-            sendto(sock, buffer, strlen(buffer), 0, (struct sockaddr*)&client, clen);
+            sprintf( buffer, "got msg size:%d", ret );
+            sendto( sock, buffer, strlen(buffer), 0, (struct sockaddr*)&client, clen );
 
             memset( buffer, '\0', bsz );
         }

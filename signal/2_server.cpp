@@ -13,7 +13,7 @@ void sigcbk( int sig )
 {
     // 由于信号可能会中断其他系统操作,因此可能会覆盖其他调用的错误码,所以要备份和恢复错误码
     int lerrno = errno;
-    printf("sig:%d\n", sig );
+    printf( "sig:%d\n", sig );
     errno = lerrno;
 }
 

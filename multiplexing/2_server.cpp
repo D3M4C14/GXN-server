@@ -70,7 +70,7 @@ int main( int argc, char* argv[] )
 
         if ( ret < 0 )
         {
-            perror("poll");
+            perror( "poll" );
             break;
         }
         

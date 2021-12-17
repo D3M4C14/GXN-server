@@ -35,22 +35,23 @@ int main( int argc, char* argv[] )
 
     // 连接
     if( connect( sock, (struct sockaddr*)&address, alen ) < 0){
-        perror("connect");
+        perror( "connect" );
         return 1;
     }
     
     const int bsz = 4096;
     char buffer[ bsz ];
-    while(1){
+    while(1)
+    {
 
-        printf("-input msg...\n");
+        printf( "-input msg...\n" );
         std::cin >> buffer;
-        printf("\n");
+        printf( "\n" );
 
         int len = strlen( buffer );
-        if(len>1 && buffer[0]=='U' )
+        if( len > 1 && buffer[0] == 'U' )
         {
-            sendto(sock, buffer, len, MSG_DONTWAIT, (struct sockaddr*)&address, alen);
+            sendto( sock, buffer, len, MSG_DONTWAIT, (struct sockaddr*)&address, alen);
             printf( "sendto msg: '%s'\n", buffer );
         }
         else
@@ -59,16 +60,16 @@ int main( int argc, char* argv[] )
             printf( "send msg: '%s'\n", buffer );
         }
 
-        if(strcmp(buffer,"quit")==0)break;
+        if( strcmp( buffer, "quit" ) == 0 ) break;
 
         usleep(100000);
 
         for (int i = 0; i < 10; ++i)
         {
-
             memset( buffer, '\0', bsz );
             len = recv( sock, buffer, bsz, MSG_DONTWAIT );
-            if(len>0){
+            if( len > 0 )
+            {
                 printf( "from server msg: '%s'\n", buffer );
             }
             else

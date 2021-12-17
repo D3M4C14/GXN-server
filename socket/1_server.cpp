@@ -66,7 +66,7 @@ int main( int argc, char* argv[] )
     int connfd = accept( sock, (struct sockaddr*)&client, &clen );
     if ( connfd < 0 )
     {
-        perror("accept");
+        perror( "accept" );
     }
     else
     {
@@ -81,28 +81,30 @@ int main( int argc, char* argv[] )
         // 收发数据
         while ( true )
         {
-            usleep(100000);
+            usleep( 100000 );
 
             bool oob = false;
-            ret = sockatmark(connfd);
-            if(ret==1){
-                oob = true;
-                printf("at OOB mark\n");
-            }
-            else if(ret==-1)
+            ret = sockatmark( connfd );
+            if( ret == 1 )
             {
-                perror("sockatmark");
+                oob = true;
+                printf( "at OOB mark\n" );
+            }
+            else if( ret == -1 )
+            {
+                perror( "sockatmark" );
             }
 
             memset( buffer, '\0', bsz );
             ret = recv( connfd, buffer, bsz-1, 0 );
             printf( "from client got %d bytes of data: '%s'\n", ret, buffer );
 
-            sprintf(buffer,"got msg size:%d",ret);
+            sprintf( buffer, "got msg size:%d", ret );
             send( connfd, buffer, strlen( buffer ), 0 );
 
-            if(oob){
-                sprintf(buffer,"<got oob msg>");
+            if( oob )
+            {
+                sprintf( buffer, "<got oob msg>");
                 send( connfd, buffer, strlen( buffer ), MSG_OOB );
             }
             

@@ -57,7 +57,7 @@ int main( int argc, char* argv[] )
 
     pthread_join( tid, (void**)&retval );
 
-    printf("got thread retval : ptr(%p) val(%ld)\n", retval , *retval );
+    printf( "got thread retval : ptr(%p) val(%ld)\n", retval , *retval );
 
     return 0;
 }

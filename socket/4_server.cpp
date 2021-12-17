@@ -21,7 +21,8 @@ void sigcbk( int sig )
 
     if( sig == SIGTERM ){
         stop = true;
-    }else if( sig == SIGURG ){
+    }else if( sig == SIGURG )
+    {
         
         // 由于信号可能会中断其他系统操作,因此可能会覆盖其他调用的错误码,所以要备份和恢复错误码
         int lerrno = errno;
@@ -69,7 +70,7 @@ int main( int argc, char* argv[] )
     connfd = accept( sock, ( struct sockaddr* )&client, &clen );
     if ( connfd < 0 )
     {
-        perror("accept");
+        perror( "accept" );
     }
     else
     {
@@ -79,12 +80,14 @@ int main( int argc, char* argv[] )
         sa.sa_flags |= SA_RESTART;//中断后继续系统操作(会意外的中断系统调用)
         sigfillset( &sa.sa_mask );
         ret = sigaction( SIGURG, &sa, nullptr );
-        if( ret == -1 ){
-            perror("sigaction SIGURG");
+        if( ret == -1 )
+        {
+            perror( "sigaction SIGURG" );
         }
         ret = sigaction( SIGTERM, &sa, nullptr );
-        if( ret == -1 ){
-            perror("sigaction SIGTERM");
+        if( ret == -1 )
+        {
+            perror( "sigaction SIGTERM" );
         }
 
         // 需要设置信号拥有者进程id

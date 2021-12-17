@@ -26,7 +26,7 @@ int setnbk( int fd )
 }
 
 // 往epoll添加描述符
-void addfd( int epollfd, int fd ,unsigned int ev = EPOLLIN | EPOLLET)
+void addfd( int epollfd, int fd ,unsigned int ev = EPOLLIN | EPOLLET )
 {
     epoll_event event;
     event.data.fd = fd;
@@ -51,9 +51,10 @@ void addsig( int sig )
     sa.sa_handler = sigcbk;
     sa.sa_flags |= SA_RESTART;
     sigfillset( &sa.sa_mask );
-    int ret = sigaction( sig, &sa, NULL );
-    if( ret == -1 ){
-        perror("sigaction");
+    int ret = sigaction( sig, &sa, nullptr );
+    if( ret == -1 )
+    {
+        perror( "sigaction" );
     }
 }
 
@@ -67,8 +68,7 @@ int main( int argc, char* argv[] )
     const char* ip = argv[1];
     int port = atoi( argv[2] );
 
-    printf( "* runing %s : %s:%d \n"
-                        , basename( argv[0] ), ip, port );
+    printf( "* runing %s : %s:%d \n", basename( argv[0] ), ip, port );
 
     int ret = 0;
     struct sockaddr_in address;
@@ -87,15 +87,16 @@ int main( int argc, char* argv[] )
     assert( ret != -1 );
 
     int epollfd = epoll_create( 20 );
-    if( epollfd == -1 ){
-        perror("epoll_create");
+    if( epollfd == -1 )
+    {
+        perror( "epoll_create" );
     }
 
     addfd( epollfd, listenfd );
 
     ret = socketpair( PF_UNIX, SOCK_STREAM, 0, sigpfd );
     if( ret == -1 ){
-        perror("socketpair");
+        perror( "socketpair" );
     }
     // 信号写端管道非阻塞
     setnbk( sigpfd[1] );
@@ -117,7 +118,7 @@ int main( int argc, char* argv[] )
         int n = epoll_wait( epollfd, events, evnum, -1 );
         if ( ( n < 0 ) && ( errno != EINTR ) )
         {
-            perror("epoll_wait");
+            perror( "epoll_wait" );
             break;
         }
     
@@ -168,15 +169,15 @@ int main( int argc, char* argv[] )
                 const int buflen = 1024;
                 char buf[buflen];
 
-                if( (events[i].events & EPOLLPRI) )
+                if( events[i].events & EPOLLPRI )
                 {
                     memset( buf, '\0', buflen );
                     ret = recv( fd, buf, buflen-1, MSG_OOB );
                     if( ret <= 0 )
                     {
-                        if( ( errno != EAGAIN ) && ( errno != EWOULDBLOCK ) )
+                        if( errno != EAGAIN && errno != EWOULDBLOCK )
                         {
-                            perror("recv oob");
+                            perror( "recv oob" );
                         }
                     }
                     else
@@ -193,13 +194,13 @@ int main( int argc, char* argv[] )
                         ret = recv( fd, buf, buflen-1, 0 );
                         if( ret <= 0 )
                         {
-                            if( ( errno == EAGAIN ) || ( errno == EWOULDBLOCK ) )
+                            if( errno == EAGAIN || errno == EWOULDBLOCK )
                             {
                                 break;
                             }
                             else
                             {
-                                perror("recv");
+                                perror( "recv" );
                                 break;
                             }
                         }

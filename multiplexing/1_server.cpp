@@ -90,7 +90,7 @@ int main( int argc, char* argv[] )
 
         if ( ret < 0 )
         {
-            perror("select");
+            perror( "select" );
             break;
         }
         else if( ret == 0 )

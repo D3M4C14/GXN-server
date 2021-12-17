@@ -129,7 +129,7 @@ int main( int argc, char* argv[] )
 
     }
 
-    waitpid( pid, NULL, 0 );
+    waitpid( pid, nullptr, 0 );
     semctl( sem_id, 0, IPC_RMID );
     return 0;
 }

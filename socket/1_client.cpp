@@ -50,24 +50,27 @@ int main( int argc, char* argv[] )
     address.sin_port = htons( port );
 
     // 连接
-    if( connect( sock, (struct sockaddr*)&address, sizeof(address) ) < 0){
-        perror("connect");
+    if( connect( sock, (struct sockaddr*)&address, sizeof(address) ) < 0)
+    {
+        perror( "connect" );
         return 1;
     }
     
     const int bsz = 4096;
     char buffer[ bsz ];
-    while(1){
+    while( true )
+    {
 
-        printf("-input msg...\n");
+        printf( "-input msg...\n" );
         std::cin >> buffer;
-        printf("\n");
+        printf( "\n" );
 
         int len = strlen( buffer );
         if(len>=1 && buffer[0]=='O' )
         {
             send( sock, buffer, len, MSG_OOB );
-        }else if(len>=1 && buffer[0]=='D' )
+        }
+        else if( len>=1 && buffer[0]=='D' )
         {
             // 第二个紧急数据会覆盖第一个(一个TCP包只有一个紧急指针)
             send( sock, buffer, len, MSG_OOB );
@@ -92,17 +95,19 @@ int main( int argc, char* argv[] )
         for (int i = 0; i < 10; ++i)
         {
             int ret = sockatmark(sock);
-            if(ret==1){
-                printf("at OOB mark\n");
+            if(ret==1)
+            {
+                printf( "at OOB mark\n" );
             }
             else if(ret==-1)
             {
-                perror("sockatmark");
+                perror( "sockatmark" );
             }
 
             memset( buffer, '\0', bsz );
             len = recv( sock, buffer, bsz, MSG_DONTWAIT );
-            if(len>0){
+            if(len>0)
+            {
                 printf( "from server msg: '%s'\n", buffer );
             }
             else

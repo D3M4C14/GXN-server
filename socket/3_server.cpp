@@ -67,7 +67,7 @@ int main( int argc, char* argv[] )
     int tcpfd = accept( listenfd, (struct sockaddr*)&tcpclient, &tclen );
     if ( tcpfd < 0 )
     {
-        perror("accept");
+        perror( "accept" );
     }
     else
     {
@@ -87,10 +87,11 @@ int main( int argc, char* argv[] )
 
             // TCP 
             ret = recv( tcpfd, buffer, bsz-1, MSG_DONTWAIT );
-            if( ret > 0 ){
+            if( ret > 0 )
+            {
                 printf( "from client tcp got %d bytes of data: '%s'\n", ret, buffer );
 
-                sprintf(buffer,"got msg size:%d",ret);
+                sprintf( buffer,"got msg size:%d", ret );
                 send( tcpfd, buffer, strlen( buffer ), 0 );
 
                 memset( buffer, '\0', bsz );
@@ -98,10 +99,11 @@ int main( int argc, char* argv[] )
 
             // UDP
             ret = recvfrom(udpfd, buffer, bsz-1, MSG_DONTWAIT, (struct sockaddr*)&udpclient, &uclen);
-            if( ret > 0 ){
+            if( ret > 0 )
+            {
                 printf( "from client udp got %d bytes of data: '%s'\n", ret, buffer );
 
-                sprintf(buffer,"got msg size:%d",ret);
+                sprintf( buffer, "got msg size:%d", ret );
                 send( udpfd, buffer, strlen( buffer ), 0 );
 
                 memset( buffer, '\0', bsz );

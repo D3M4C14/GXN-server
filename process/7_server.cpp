@@ -56,7 +56,7 @@ int main( int argc, char* argv[] )
     int ret = socketpair( PF_UNIX, SOCK_DGRAM, 0, pfd );
     if( ret == -1 )
     {
-        perror("socketpair");
+        perror( "socketpair" );
         return 1;
     }
 
