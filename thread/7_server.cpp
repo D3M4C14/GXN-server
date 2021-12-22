@@ -73,6 +73,8 @@ int main(int argc, char *argv[])
 
     }
 
+    pthread_join( tid, nullptr );
+
     return 0;
 }
 
